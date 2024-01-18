@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// here get salary is used multiple times
 type salary interface {
 	getSalary()
 }

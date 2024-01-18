@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// creating a tree
 type Node struct {
 	val   string
 	left  *Node
