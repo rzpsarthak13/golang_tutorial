@@ -3,8 +3,8 @@ package main
 import "fmt"
 
 // here get salary is used multiple times
-type salary interface {
-	getSalary()
+type Employee interface {
+	CalculateSalary() int
 }
 
 type Fulltime struct {
@@ -22,15 +22,18 @@ type Freelancer struct {
 	salary int
 }
 
-func (f Fulltime) getSalary() int {
+func CalculateSalary(employee Employee) int {
+	return employee.CalculateSalary()
+}
+func (f Fulltime) CalculateSalary() int {
 	return f.month * 15000
 }
 
-func (c Contractor) getSalary() int {
+func (c Contractor) CalculateSalary() int {
 	return c.month * 3000
 }
 
-func (g Freelancer) getSalary() int {
+func (g Freelancer) CalculateSalary() int {
 	if g.hours > 20 {
 		return g.hours * 2000
 	}
@@ -43,8 +46,8 @@ func main() {
 	f.month = 11
 	g.hours = 32
 	c.month = 13
-	fmt.Printf("Fulltime salary is %v\n", f.getSalary())
-	fmt.Printf("Contractor salary is %v\n", c.getSalary())
-	fmt.Printf("freelancer salary is %v\n", g.getSalary())
+	fmt.Printf("Fulltime salary is %v\n", CalculateSalary(f))
+	fmt.Printf("Contractor salary is %v\n", CalculateSalary(g))
+	fmt.Printf("freelancer salary is %v\n", CalculateSalary(c))
 
 }
