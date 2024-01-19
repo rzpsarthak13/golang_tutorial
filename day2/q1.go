@@ -5,23 +5,27 @@ import (
 	"sync"
 )
 
-func count(input []string) map[string]int {
-	freq := make(map[string]int) // have to try once with slice as well
+func count(input []string) []int {
+	// freq := make(map[string]int) hash map
+	freq := make([]int, 26)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	for _, str := range input {
 		wg.Add(1)
 		go func(str string) {
-			defer wg.Done()           // to keep going the go routines
-			m := make(map[string]int) // local map for storing each string frequency
+			defer wg.Done()      // to keep going the go routines
+			m := make([]int, 26) // local slice for storing each string frequency
 
 			for _, char := range str {
-				char := string(char)
-				m[char]++
+				// char := string(char)
+				m[char-'a']++
 			}
 			mu.Lock()
-			for char, count := range m {
-				freq[char] += count
+			// for char, count := range m {
+			// 	freq[char] += count
+			// }
+			for i := 0; i < 26; i++ {
+				freq[i] += m[i] // slice implementation
 			}
 			mu.Unlock()
 		}(str)
