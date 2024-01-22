@@ -6,10 +6,9 @@ import (
 	"time"
 )
 
-var mu sync.Mutex
-
 type Account struct {
 	balance int
+	mu      sync.Mutex // for own mutex of each instance
 }
 
 // create new account

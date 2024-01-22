@@ -7,24 +7,25 @@ import (
 	"time"
 )
 
+func takeRatings(wg *sync.WaitGroup, ratings chan<- int) {
+	defer wg.Done()
+	time.Sleep(time.Duration(rand.Intn(200)) * time.Millisecond) // to generate random response
+	studentRating := rand.Intn(10)                               // rating between 1 and 10
+	ratings <- studentRating
+}
 func main() {
 	var wg sync.WaitGroup
-	wg.Add(200)                   // add 200 students to wait group
-	rating := make(chan int, 200) // buffered channel for 200 students
+	wg.Add(200)                    // add 200 students to wait group
+	ratings := make(chan int, 200) // buffered channel for 200 students
 	for i := 0; i < 200; i++ {
-		go func() {
-			defer wg.Done()
-			time.Sleep(time.Duration(rand.Intn(200)) * time.Millisecond) // to generate random response
-			student := rand.Intn(10)                                     // rating between 1 and 10
-			rating <- student
-		}()
+		go takeRatings(&wg, ratings)
 	}
 
 	wg.Wait()
-	close(rating) // to avoid deadlock  fatal error: all goroutines are asleep - deadlock! this error was coming
+	close(ratings) // to avoid deadlock  fatal error: all goroutines are asleep - deadlock! this error was coming
 
 	var total int
-	for r := range rating {
+	for r := range ratings {
 		total += r
 	}
 
