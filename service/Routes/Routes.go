@@ -18,9 +18,20 @@ func SetUpRouter() *gin.Engine {
 	}
 	grp2 := r.Group("/orders")
 	{
-		grp2.POST("", Controllers.PlaceOrder) // Place an order
-		//grp2.GET("/:id", Controllers.GetOrderByID) // Get order by ID
+		grp2.POST("", Controllers.PlaceOrder)
+		grp2.GET("/:id", Controllers.GetOrderByID)
 		//grp2.GET("", Controllers.GetAllOrders) // Get all orders
+	}
+
+	grp3 := r.Group("/customer")
+	{
+		grp3.POST("", Controllers.CreateCustomer)
+		grp3.GET("/:id", Controllers.GetOrderHistory)
+	}
+
+	grp4 := r.Group("/retailer")
+	{
+		grp4.GET("", Controllers.GetTransactions)
 	}
 
 	return r
