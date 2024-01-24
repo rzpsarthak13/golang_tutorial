@@ -2,9 +2,12 @@ package Controllers
 
 import (
 	"errors"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
+
 	"service/Config"
 	"service/Models"
 )
@@ -77,6 +80,7 @@ func CreateCustomer(c *gin.Context) {
 
 	var customer Models.Customer
 	c.BindJSON(&customer)
+	customer.LastOrderTime = time.Now().Add(-10 * time.Minute)
 	var err = Config.DB.Create(&customer).Error
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -92,7 +96,7 @@ func PlaceOrder(c *gin.Context) {
 		return
 	}
 
-	if err := validateProduct(order.ProductID); err != nil {
+	if err := validateProduct(order.ProductID, order.Quantity); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -101,25 +105,45 @@ func PlaceOrder(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	//todo: order can be placed or failed.. by quantity availability
-	//todo: get all transactions for a retailer
+	// have to  check this once
+	var customer Models.Customer
+	cooldown := time.Since(customer.LastOrderTime)
+	if cooldown < 5*time.Minute {
+		c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "try again later"})
+		return
+	}
 
 	order.Status = "order placed" // Default status
 	if err := Config.DB.Create(&order).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	UpdateProductQuantity(order.ProductID, order.Quantity)
 	c.JSON(http.StatusOK, order)
 }
 
-func validateProduct(productID uint) error {
+func validateProduct(productID uint, orderQuantity int) error {
 	var product Models.Product
 	if err := Config.DB.First(&product, productID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return errors.New("Invalid product ID")
 		}
 		return err
+	}
+
+	if product.Quantity < orderQuantity {
+		return errors.New("insufficient product quantity")
+	}
+
+	return nil
+}
+
+// todo: have to see why this is not working
+func UpdateProductQuantity(productID uint, orderQuantity int) error {
+	var product Models.Product
+	product.Quantity -= orderQuantity
+	if err := Config.DB.Save(&product).Error; err != nil {
+		return errors.New("failed to update product quantity")
 	}
 
 	return nil

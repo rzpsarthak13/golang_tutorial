@@ -2,6 +2,7 @@ package Routes
 
 import (
 	"github.com/gin-gonic/gin"
+
 	"service/Controllers"
 )
 
@@ -20,7 +21,6 @@ func SetUpRouter() *gin.Engine {
 	{
 		grp2.POST("", Controllers.PlaceOrder)
 		grp2.GET("/:id", Controllers.GetOrderByID)
-		//grp2.GET("", Controllers.GetAllOrders) // Get all orders
 	}
 
 	grp3 := r.Group("/customer")

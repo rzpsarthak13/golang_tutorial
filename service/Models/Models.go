@@ -1,13 +1,15 @@
 package Models
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
 type Customer struct {
 	gorm.Model
-	Name string
-	//LastOrderTime time.Time  implementation of 5 mins cool down
+	Name          string
+	LastOrderTime time.Time
 }
 
 type Order struct {
