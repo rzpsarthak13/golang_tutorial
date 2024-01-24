@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// creating a tree
 type Node struct {
 	val   string
 	left  *Node
@@ -20,8 +21,8 @@ func preOrder(node *Node) {
 }
 func postOrder(node *Node) {
 	if node != nil {
-		preOrder(node.left)
-		preOrder(node.right)
+		postOrder(node.left)
+		postOrder(node.right)
 		fmt.Printf(node.val)
 	}
 }

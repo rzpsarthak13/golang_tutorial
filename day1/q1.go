@@ -46,6 +46,7 @@ func (m Matrix) AddMatrix(other Matrix) Matrix {
 }
 
 func (m Matrix) MatrixToJSON() (string, error) {
+	// Marshal function to convert here // unmarshal to do the reverse
 	json, err := json.Marshal(m)
 	if err != nil {
 		return "", err
@@ -79,7 +80,7 @@ func main() {
 	fmt.Println(ans.Elements)
 	//matrix2json
 	json, err := matrix1.MatrixToJSON()
-	if err == nil {
+	if err =git = nil {
 		fmt.Println("json is ", json)
 	} else {
 		fmt.Println("error is", err)
