@@ -2,12 +2,14 @@ package Controllers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"service/Config"
 	"service/Models"
 )
 
@@ -35,4 +37,33 @@ func validateCustomer(customerID uint) error {
 		}
 	}
 	return nil
+}
+
+func GetOrderHistory(c *gin.Context) {
+	customerID := c.Params.ByName("id")
+	var orders []Models.Order
+	if err := Models.GetOrderHistory(customerID, &orders); err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, orders)
+}
+
+func GetLastOrderTime(customerID uint) (time.Time, error) {
+	var customer Models.Customer
+	err := Models.GetLastOrderTime(customer, customerID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return time.Time{}, errors.New("customer not found")
+		}
+	}
+	return customer.LastOrderTime, nil
+}
+
+func updateCustomerLastOrderTime(customerID uint, newLastOrderTime time.Time) error {
+
+	query := fmt.Sprintf("UPDATE customers SET last_order_time = ? WHERE id = ?")
+	return Config.DB.Exec(query, newLastOrderTime, customerID).Error
+
 }

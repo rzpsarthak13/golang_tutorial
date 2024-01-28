@@ -2,6 +2,7 @@ package Controllers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -27,9 +28,13 @@ func PlaceOrder(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// have to  check this once
-	var customer Models.Customer
-	cooldown := time.Since(customer.LastOrderTime)
+	// have to  check this once why this is not working????
+	lastOrderTime, err := GetLastOrderTime(order.CustomerID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	cooldown := time.Since(lastOrderTime)
 	if cooldown < 5*time.Minute {
 		c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "try again later"})
 		return
@@ -41,7 +46,13 @@ func PlaceOrder(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	UpdateProductQuantity(order.ProductID, order.Quantity)
+	if err := updateCustomerLastOrderTime(order.CustomerID, order.CreatedAt); err != nil {
+		log.Println("Failed to update customer LastOrderTime:", err)
+	}
+	if err := UpdateProductQuantity(order.ProductID, order.Quantity); err != nil {
+		log.Println("Failed to update order Quantity:", err)
+
+	}
 	c.JSON(http.StatusOK, order)
 }
 

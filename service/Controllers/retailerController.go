@@ -26,17 +26,6 @@ func GetOrderByID(c *gin.Context) {
 
 }
 
-func GetOrderHistory(c *gin.Context) {
-	customerID := c.Params.ByName("id")
-	var orders []Models.Order
-	if err := Models.GetOrderHistory(customerID, &orders); err != nil {
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.JSON(http.StatusOK, orders)
-}
-
 func GetTransactions(c *gin.Context) {
 	var orders []Models.Order
 	err := Models.GetTransactions(&orders)
