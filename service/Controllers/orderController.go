@@ -2,6 +2,7 @@ package Controllers
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"service/Config"
 	"service/Models"
 )
 
@@ -28,7 +30,7 @@ func PlaceOrder(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// have to  check this once why this is not working????
+
 	lastOrderTime, err := GetLastOrderTime(order.CustomerID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -49,6 +51,7 @@ func PlaceOrder(c *gin.Context) {
 	if err := updateCustomerLastOrderTime(order.CustomerID, order.CreatedAt); err != nil {
 		log.Println("Failed to update customer LastOrderTime:", err)
 	}
+
 	if err := UpdateProductQuantity(order.ProductID, order.Quantity); err != nil {
 		log.Println("Failed to update order Quantity:", err)
 
@@ -74,10 +77,15 @@ func validateProduct(productID uint, orderQuantity int) error {
 
 func UpdateProductQuantity(productID uint, orderQuantity int) error {
 	var product Models.Product
-	product.Quantity -= orderQuantity
-	if err := Models.UpdateProductQuantity(&product); err != nil {
-		return errors.New("failed to update product quantity")
+	err := Config.DB.First(&product, productID).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return errors.New("Invalid product ID")
+		}
+		return err
 	}
+	newQuantity := product.Quantity - orderQuantity
+	query := fmt.Sprintf("UPDATE products SET quantity = ? WHERE id = ?")
+	return Config.DB.Exec(query, newQuantity, productID).Error
 
-	return nil
 }

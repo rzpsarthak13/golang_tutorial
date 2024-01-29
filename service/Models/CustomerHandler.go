@@ -20,7 +20,7 @@ func ValidateCustomer(customer *Customer, customerID uint) (err error) {
 	return nil
 }
 
-func GetLastOrderTime(customer Customer, customerID uint) (err error) {
+func GetLastOrderTime(customer *Customer, customerID uint) (err error) {
 	if err := Config.DB.First(&customer, customerID).Error; err != nil {
 		return err
 	}

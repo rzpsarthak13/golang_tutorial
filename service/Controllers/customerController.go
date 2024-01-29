@@ -52,7 +52,7 @@ func GetOrderHistory(c *gin.Context) {
 
 func GetLastOrderTime(customerID uint) (time.Time, error) {
 	var customer Models.Customer
-	err := Models.GetLastOrderTime(customer, customerID)
+	err := Models.GetLastOrderTime(&customer, customerID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return time.Time{}, errors.New("customer not found")
@@ -67,3 +67,5 @@ func updateCustomerLastOrderTime(customerID uint, newLastOrderTime time.Time) er
 	return Config.DB.Exec(query, newLastOrderTime, customerID).Error
 
 }
+
+//todo: delete customer func can also be added also special perks like for prime customer can also be done
